@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useReducer } from "react"
 import {db} from "../firebase/config"
-import {collection, addDoc, Timestamp} from "firebase/firestore"
+import {doc, deleteDoc} from "firebase/firestore"
 
 const initialState = {
     loading : null,
@@ -9,12 +9,12 @@ const initialState = {
 
 }
 
-const insertReducer = (state, action) =>{
+const deleteReducer = (state, action) =>{
     switch (action.type){
 
         case "LOADING":
             return {loading: true, error:null}
-        case "INSERTED_DOC":
+        case "DELETED_DOC":
             return {loading: false, error:null}
         case "ERROR":
             return {loading: false, error: action.payload}
@@ -26,9 +26,9 @@ const insertReducer = (state, action) =>{
 
 };
 
-export const useInsertDocument = (docCollection) =>{
+export const useDeleteDocument = (docCollection) =>{
 
-    const [response, dispatch] = useReducer(insertReducer, initialState)
+    const [response, dispatch] = useReducer(deleteReducer, initialState)
 
     // deal with memory leak 
     const [cancelled , setCancelled] =  useState(false)
@@ -39,7 +39,7 @@ export const useInsertDocument = (docCollection) =>{
         }
     }
 
-    const insertDocument = async (document) => {
+    const deleteDocument = async (id) => {
 
         checkCancelBeforeDispatch({
             type:"LOADING",
@@ -47,15 +47,11 @@ export const useInsertDocument = (docCollection) =>{
         })
 
         try {
-            const newDocument = {...document, createdAt: Timestamp.now() }
-
-            const insertedDocument = await addDoc(
-                collection(db, docCollection),
-                newDocument
-            )
+            const deleteDocument = await deleteDoc(doc(db,docCollection, id))
+           
             checkCancelBeforeDispatch({
-                type:"INSERTED_DOC",
-                payload: insertedDocument
+                type:"DELETED_DOC",
+                payload: deleteDocument
             }) 
         } catch (error) {
 
@@ -65,12 +61,12 @@ export const useInsertDocument = (docCollection) =>{
             })
             
         }   
-          
+             
     }
 
     useEffect(() =>{
         return () => setCancelled(true)
     },[])
 
-    return{insertDocument, response}
+    return{deleteDocument, response}
 }

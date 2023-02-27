@@ -37,11 +37,13 @@ export const useAuthentication = () => {
                 data.email,
                 data.password
             )
-        await updateProfile(user,{
-            diplayName:data.displayName
-        })
-            setLoading(false)
+        await updateProfile(user , {
+            displayName: data.displayName
 
+
+            })
+            setLoading(false)
+            
             return user  
 
         } catch (error) {
